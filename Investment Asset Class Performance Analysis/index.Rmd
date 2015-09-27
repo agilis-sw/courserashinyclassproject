@@ -1,0 +1,86 @@
+---
+title       : Investment Asset Class Performance Analysis
+subtitle    : 
+author      : Yours Truly Anonymous
+job         : 
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+## Objective
+
+- Visually compare performance of investment asset classes over time  
+- Compare performance over maximum available time range (1998 thru 2013)  
+- Compare performance during dotcom bust  
+- Compare performance during great recession  
+- Data is intended as input for constructing diverified portfolio for minimizing volatility and maximizing return  
+
+```{r miscCode, echo=FALSE,warning=FALSE,cache=FALSE}
+library(reshape2)
+library(ggplot2)
+
+normalize <- function(df) {
+        dfn=melt(df,id="Year")
+        names(dfn)[2]="Asset.class"
+        names(dfn)[3]="Return"
+        dfn$Asset.class=as.factor(dfn$Asset.class)
+        return(dfn)
+}
+
+dosummaryplot <- function(dfn, yearfrom, yearto) {
+        gtitle = paste("Asset class performance for period", as.character(yearfrom), "through", as.character(yearto))
+        dfnx = dfn[(dfn$Year >= yearfrom & dfn$Year <= yearto), ];
+        plt=ggplot(dfnx, aes(x=Asset.class, y=Return, fill=Asset.class)) + geom_boxplot() +
+                stat_summary(fun.y=mean, geom="point", shape=5, size=4) +
+                scale_x_discrete("Asset Class",
+                                 labels=c("Smallcap Stock","Value Stock","Largecap Stock","Growth Stock",
+                                          "Real Estate Stock","Foreign Developed Stock","Hi Yield Bond",
+                                          "Investment Grade Bond","Emerging Market Stock","Commodity"))+
+                scale_y_continuous("Return (percent)",breaks=c(-60,-55,-50,-45,-40,-35,-30,-25,-20,-15,-10,-5,0,5,10,15,20,25,30,35,40,45,50,55,60))+
+                ggtitle(gtitle)
+        #print(plt)
+        #ggsave(filename="asset-perf-summary.png",plot=plt)
+        return(plt)
+}
+
+df = read.csv("/Users/vinay/datasciencecoursera/class8/project/asset-class-performance-1998-thru-2013.csv")
+dfn <- normalize(df)
+minYear = dfn[1,1]
+maxYear = dfn[nrow(dfn),1]
+
+```
+
+
+--- .class #id 
+
+## Performance 1998-2013
+
+```{r perfall,echo=FALSE,warning=FALSE,cache=FALSE}
+dosummaryplot(dfn, 1998, 2013)
+```
+
+
+--- .class #id 
+
+## Performance 2000-2002
+
+```{r perfdotcom,echo=FALSE,warning=FALSE,cache=FALSE}
+dosummaryplot(dfn, 2000, 2002)
+```
+
+
+--- .class #id 
+
+## Performance 2008-2010
+
+```{r perfgreatrecession,echo=FALSE,warning=FALSE,cache=FALSE}
+dosummaryplot(dfn, 2008, 2010)
+```
+
+
+---
+
